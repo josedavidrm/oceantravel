@@ -18,7 +18,7 @@ $promociones = $promoObj->listarActivas();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OceanTravel — Reservas hoteleras en Isla de Margarita</title>
-    <link rel="stylesheet" href="<?= SITE_URL ?>/public/css/styles.css">
+    <link rel="stylesheet" href="/public/css/styles.css">
 </head>
 <body>
 
@@ -30,7 +30,7 @@ $promociones = $promoObj->listarActivas();
 
         <!-- Logo -->
         <a href="<?= SITE_URL ?>" class="nav-logo">
-            <div class="nav-logo-icon">🌊</div>
+            <div class="nav-logo-icon"></div>
             <div class="nav-logo-text">Ocean<span>Travel</span></div>
         </a>
 
@@ -97,7 +97,7 @@ $promociones = $promoObj->listarActivas();
 
     <div class="container hero-content">
         <div class="hero-badge">
-            🌴 Isla de Margarita, Venezuela
+             Isla de Margarita, Venezuela
         </div>
 
         <h1>
@@ -286,10 +286,10 @@ $promociones = $promoObj->listarActivas();
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:2rem;">
             <?php
             $beneficios = [
-                ['🏖️', 'Hoteles verificados',    'Todos nuestros hoteles son inspeccionados y verificados para garantizar la mejor calidad.'],
-                ['💰', 'Mejores precios',          'Encontramos las mejores tarifas disponibles con descuentos exclusivos de temporada.'],
-                ['⚡', 'Reserva en minutos',       'Proceso de reserva simple y rápido. Confirmación inmediata por correo electrónico.'],
-                ['🛡️', 'Pago seguro',             'Todas las transacciones están protegidas con encriptación de máxima seguridad.'],
+                ['', 'Hoteles verificados',    'Todos nuestros hoteles son inspeccionados y verificados para garantizar la mejor calidad.'],
+                ['', 'Mejores precios',          'Encontramos las mejores tarifas disponibles con descuentos exclusivos de temporada.'],
+                ['', 'Reserva en minutos',       'Proceso de reserva simple y rápido. Confirmación inmediata por correo electrónico.'],
+                ['', 'Pago seguro',             'Todas las transacciones están protegidas con encriptación de máxima seguridad.'],
             ];
             foreach ($beneficios as $b): ?>
             <div class="card" style="text-align:center;padding:2rem;">
@@ -384,7 +384,7 @@ $promociones = $promoObj->listarActivas();
         <div class="footer-grid">
             <div class="footer-brand">
                 <div class="nav-logo">
-                    <div class="nav-logo-icon">🌊</div>
+                    <div class="nav-logo-icon"></div>
                     <div class="nav-logo-text">Ocean<span>Travel</span></div>
                 </div>
                 <p>Tu agencia de confianza para reservas hoteleras en la hermosa Isla de Margarita, Venezuela. Calidad, comodidad y los mejores precios del Caribe.</p>

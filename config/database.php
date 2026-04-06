@@ -12,7 +12,7 @@ define('DB_CHARSET',  'utf8mb4');
 
 // Configuración general del sistema
 define('SITE_NAME',   'OceanTravel');
-define('SITE_URL', 'http://localhost:8012/oceantravel');
+define('SITE_URL',    'http://oceantravel.test');
 define('UPLOAD_PATH', __DIR__ . '/../public/images/uploads/');
 define('UPLOAD_URL',  SITE_URL . '/public/images/uploads/');
 

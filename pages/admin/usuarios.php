@@ -6,11 +6,12 @@ session_start();
 Usuario::verificarSesion('admin');
 
 $usuarioObj = new Usuario();
+$db = Database::getInstance()->getConnection();
 
 // Cambiar estado usuario
 if (isset($_GET['toggle'])) {
-    $id  = (int)$_GET['toggle'];
-    $est = $_GET['est'] ?? 'activo';
+    $id    = (int)$_GET['toggle'];
+    $est   = $_GET['est'] ?? 'activo';
     $nuevo = $est === 'activo' ? 'inactivo' : 'activo';
     $usuarioObj->cambiarEstado($id, $nuevo);
     header('Location: ' . SITE_URL . '/pages/admin/usuarios.php?updated=1');
@@ -20,15 +21,17 @@ if (isset($_GET['toggle'])) {
 $rol    = $_GET['rol']    ?? '';
 $buscar = $_GET['buscar'] ?? '';
 
-$db  = Database::getInstance()->getConnection();
 $sql = "SELECT * FROM usuarios WHERE 1=1";
 $params = [];
-if ($rol)    { $sql .= " AND rol = ?";                   $params[] = $rol; }
+if ($rol)    { $sql .= " AND rol = ?";                        $params[] = $rol; }
 if ($buscar) { $sql .= " AND (nombre LIKE ? OR email LIKE ?)"; $params[] = "%$buscar%"; $params[] = "%$buscar%"; }
 $sql .= " ORDER BY fecha_registro DESC";
 $stmt = $db->prepare($sql);
 $stmt->execute($params);
 $usuarios = $stmt->fetchAll();
+
+// Obtener hoteles para el select
+$hoteles = $db->query("SELECT id_hotel, nombre, sector FROM hoteles WHERE estado = 'activo' ORDER BY nombre")->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -48,7 +51,10 @@ $usuarios = $stmt->fetchAll();
         <div class="admin-content">
 
             <?php if (isset($_GET['updated'])): ?>
-                <div class="alert alert-success">✅ Usuario actualizado.</div>
+                <div class="alert alert-success">✅ Usuario actualizado correctamente.</div>
+            <?php endif; ?>
+            <?php if (isset($_GET['error'])): ?>
+                <div class="alert alert-danger">❌ Error al crear el usuario. El email puede estar en uso.</div>
             <?php endif; ?>
 
             <!-- Filtros -->
@@ -79,7 +85,8 @@ $usuarios = $stmt->fetchAll();
             <div class="card">
                 <div class="card-header">
                     <h3>Usuarios registrados (<?= count($usuarios) ?>)</h3>
-                    <button class="btn btn-sm btn-primary" onclick="document.getElementById('modalNuevoUsuario').style.display='flex'">
+                    <button class="btn btn-sm btn-primary"
+                            onclick="document.getElementById('modalNuevoUsuario').style.display='flex'">
                         + Nuevo usuario
                     </button>
                 </div>
@@ -146,8 +153,8 @@ $usuarios = $stmt->fetchAll();
 </div>
 
 <!-- Modal nuevo usuario -->
-<div id="modalNuevoUsuario" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
-    <div style="background:var(--white);border-radius:var(--radius-md);padding:2rem;width:100%;max-width:480px;margin:1rem;">
+<div id="modalNuevoUsuario" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;overflow-y:auto;padding:1rem;">
+    <div style="background:var(--white);border-radius:var(--radius-md);padding:2rem;width:100%;max-width:480px;margin:auto;">
         <h3 style="margin-bottom:1.5rem;font-family:'Poppins',sans-serif;">Nuevo usuario</h3>
         <form method="POST" action="<?= SITE_URL ?>/pages/admin/ajax/crear-usuario.php">
             <div class="form-row">
@@ -166,7 +173,7 @@ $usuarios = $stmt->fetchAll();
             </div>
             <div class="form-group">
                 <label>Teléfono</label>
-                <input type="tel" name="telefono" class="form-control">
+                <input type="tel" name="telefono" class="form-control" placeholder="+58 424-0000000">
             </div>
             <div class="form-row">
                 <div class="form-group">
@@ -175,14 +182,41 @@ $usuarios = $stmt->fetchAll();
                 </div>
                 <div class="form-group">
                     <label>Rol</label>
-                    <select name="rol" class="form-control">
+                    <select name="rol" class="form-control" id="selectRol" onchange="toggleCampoHotel(this.value)">
                         <option value="cliente">Cliente</option>
                         <option value="empleado">Empleado</option>
                         <option value="admin">Administrador</option>
                     </select>
                 </div>
             </div>
-            <div style="display:flex;gap:1rem;margin-top:1rem;">
+
+            <!-- Campo hotel — solo visible cuando rol = empleado -->
+            <div id="campoHotel" style="display:none;">
+                <div style="background:var(--ocean-pale);border-radius:var(--radius-sm);padding:1rem;margin-bottom:1rem;border:1px solid var(--color-border-tertiary);">
+                    <p style="font-size:0.8rem;color:var(--ocean-bright);font-weight:500;margin-bottom:0.75rem;">
+                        🏨 Asignación de hotel
+                    </p>
+                    <div class="form-group" style="margin-bottom:0.75rem;">
+                        <label>Hotel asignado *</label>
+                        <select name="id_hotel" class="form-control" id="selectHotel">
+                            <option value="">— Seleccionar hotel —</option>
+                            <?php foreach ($hoteles as $h): ?>
+                                <option value="<?= $h['id_hotel'] ?>">
+                                    <?= htmlspecialchars($h['nombre']) ?>
+                                    <?= $h['sector'] ? '— ' . htmlspecialchars($h['sector']) : '' ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>Cargo</label>
+                        <input type="text" name="cargo" class="form-control"
+                               placeholder="Ej: Recepcionista, Supervisor..." value="Recepcionista">
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:flex;gap:1rem;margin-top:0.5rem;">
                 <button type="submit" class="btn btn-primary btn-block">Crear usuario</button>
                 <button type="button" class="btn btn-outline btn-block"
                         onclick="document.getElementById('modalNuevoUsuario').style.display='none'">
@@ -192,5 +226,19 @@ $usuarios = $stmt->fetchAll();
         </form>
     </div>
 </div>
+
+<script>
+function toggleCampoHotel(rol) {
+    const campo = document.getElementById('campoHotel');
+    const selectHotel = document.getElementById('selectHotel');
+    if (rol === 'empleado') {
+        campo.style.display = 'block';
+        selectHotel.required = true;
+    } else {
+        campo.style.display = 'none';
+        selectHotel.required = false;
+    }
+}
+</script>
 </body>
 </html>
